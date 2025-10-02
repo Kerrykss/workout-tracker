@@ -29,4 +29,23 @@ router.get('/:id', (req, res) => {
     res.status(200).json(user);
 });
 
+//POST/users
+router.post('/', (req, res) => {
+     
+    const { name, email, } = req.body;
+
+    if (!name || !email ) {
+        return res.status(400).json({ error: "name y email son requeridos" });
+    }
+    const newUser = {
+        id: `${Date.now()}`,
+        name,
+        email,
+        role:  role || 'user',
+        createdAt: new Date().toISOString()
+    };
+    users.push(newUser);
+    res.status(201).json(newUser);
+});
+
 module.exports = router;
