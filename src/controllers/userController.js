@@ -1,7 +1,4 @@
-const express = require('express');
-const router = express.Router();
-
-// Estados de memoria (simulacion)
+// Estados de memoria (simulación)
 let users = [
     { 
         id: "1",
@@ -12,8 +9,8 @@ let users = [
     }
 ];
 
-// GET /users?role=user&search=Carlos (ÚNICA ruta GET '/')
-router.get('/', (req, res) => {
+// GET /users?role=user&search=Carlos
+const getUsers = (req, res) => {
     const { role, search } = req.query;
     let result = users;
 
@@ -28,10 +25,10 @@ router.get('/', (req, res) => {
     }
 
     res.status(200).json(result);
-});
+};
 
 // GET /users/:id
-router.get('/:id', (req, res) => {
+const getUserById = (req, res) => {
     const { id } = req.params;
     const user = users.find(u => u.id === id);
 
@@ -39,10 +36,10 @@ router.get('/:id', (req, res) => {
         return res.status(404).json({ message: 'Usuario no encontrado' });
     }
     res.status(200).json(user);
-});
+};
 
 // POST /users
-router.post('/', (req, res) => {
+const createUser = (req, res) => {
     const { name, email, role } = req.body;
 
     if (!name || !email) {
@@ -50,7 +47,7 @@ router.post('/', (req, res) => {
     }
 
     const newUser = {
-        id: `${Date.now()}`, // id temporal (puedes usar uuid)
+        id: `${Date.now()}`,
         name,
         email,
         role: role || 'user',
@@ -58,12 +55,11 @@ router.post('/', (req, res) => {
     };
 
     users.push(newUser);
-
     res.status(201).json(newUser);
-});
+};
 
 // PUT /users/:id
-router.put('/:id', (req, res) => {
+const updateUser = (req, res) => {
     const { id } = req.params;
     const { name, email, role } = req.body;
 
@@ -84,10 +80,10 @@ router.put('/:id', (req, res) => {
     };
 
     res.status(200).json(users[index]);
-});
+};
 
 // DELETE /users/:id
-router.delete('/:id', (req, res) => {
+const deleteUser = (req, res) => {
     const { id } = req.params;
     const index = users.findIndex(u => u.id === id);
 
@@ -97,6 +93,12 @@ router.delete('/:id', (req, res) => {
 
     const deletedUser = users.splice(index, 1);
     res.status(200).json({ deleted: deletedUser[0].id });
-});
+};
 
-module.exports = router;
+module.exports = {
+    getUsers,
+    getUserById,
+    createUser,
+    updateUser,
+    deleteUser
+};
