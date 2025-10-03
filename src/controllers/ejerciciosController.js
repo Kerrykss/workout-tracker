@@ -86,3 +86,37 @@ const createExercise = (req, res) => {
     exercises.push(newExercise);
     res.status(201).json(newExercise);
 };
+// PUT /exercises/:id
+const updateExercise = (req, res) => {
+    const { id } = req.params;
+    const { nombre, descripcion, categoria, grupoMuscular } = req.body;
+
+    const index = exercises.findIndex(e => e.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Ejercicio no encontrado' });
+    }
+
+    if (!nombre || !descripcion || !categoria || !grupoMuscular) {
+        return res.status(400).json({ 
+            error: 'Nombre, descripción, categoría y grupo muscular son requeridos' 
+        });
+    }
+
+    // Validar categorías permitidas
+    const categoriasPermitidas = ['cardio', 'fuerza', 'flexibilidad'];
+    if (!categoriasPermitidas.includes(categoria)) {
+        return res.status(400).json({ 
+            error: 'Categoría no válida. Use: cardio, fuerza o flexibilidad' 
+        });
+    }
+
+    exercises[index] = {
+        ...exercises[index],
+        nombre,
+        descripcion,
+        categoria,
+        grupoMuscular
+    };
+
+    res.status(200).json(exercises[index]);
+};
