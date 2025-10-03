@@ -111,3 +111,42 @@ const createEntrenamiento = (req, res) => {
     entrenamientos.push(newEntrenamiento);
     res.status(201).json(newEntrenamiento);
 };
+
+
+// PUT /entrenamientos/:id
+const updateEntrenamiento = (req, res) => {
+    const { id } = req.params;
+    const { seccionId, fechaRealizada, notas, ejerciciosRealizados } = req.body;
+
+    const index = entrenamientos.findIndex(e => e.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+    }
+
+    if (!seccionId || !fechaRealizada) {
+        return res.status(400).json({ 
+            error: 'seccionId y fechaRealizada son requeridos' 
+        });
+    }
+
+    // Validar ejercicios realizados si se proporcionan
+    if (ejerciciosRealizados && Array.isArray(ejerciciosRealizados)) {
+        for (let ejercicio of ejerciciosRealizados) {
+            if (!ejercicio.ejercicioId || !ejercicio.seriesCompletadas) {
+                return res.status(400).json({ 
+                    error: 'Cada ejercicio debe tener ejercicioId y seriesCompletadas'
+                });
+            }
+        }
+    }
+
+    entrenamientos[index] = {
+        ...entrenamientos[index],
+        seccionId,
+        fechaRealizada,
+        notas: notas || entrenamientos[index].notas,
+        ejerciciosRealizados: ejerciciosRealizados || entrenamientos[index].ejerciciosRealizados
+    };
+
+    res.status(200).json(entrenamientos[index]);
+};
