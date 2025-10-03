@@ -79,3 +79,133 @@ const getReporteById = (req, res) => {
     }
     res.status(200).json(reporte);
 };
+
+// POST /reportes/generar - Generar nuevo reporte automáticamente
+const generarReporte = (req, res) => {
+    const { usuarioId, inicio, fin } = req.body;
+
+    if (!usuarioId || !inicio || !fin) {
+        return res.status(400).json({ 
+            error: 'usuarioId, inicio y fin son requeridos' 
+        });
+    }
+
+    // Simular generación de reporte basado en datos existentes
+    const entrenamientosUsuario = entrenamientos.filter(e => e.usuarioId === usuarioId);
+    const entrenamientosPeriodo = entrenamientosUsuario.filter(e => 
+        e.fechaRealizada >= inicio && e.fechaRealizada <= fin
+    );
+
+    if (entrenamientosPeriodo.length === 0) {
+        return res.status(404).json({ 
+            error: 'No hay datos de entrenamiento para el período especificado' 
+        });
+    }
+
+    // Calcular métricas
+    const ejerciciosFrecuencia = calcularEjerciciosMasUsados(entrenamientosPeriodo);
+    const metricasProgreso = calcularProgreso(entrenamientosPeriodo);
+    const recomendaciones = generarRecomendaciones(metricasProgreso, ejerciciosFrecuencia);
+
+    const nuevoReporte = {
+        id: `${Date.now()}`,
+        usuarioId,
+        periodo: { inicio, fin },
+        totalSesiones: entrenamientosPeriodo.length,
+        ejerciciosMasUsados: ejerciciosFrecuencia.slice(0, 5), // Top 5
+        progreso: metricasProgreso,
+        recomendaciones,
+        generadoEn: new Date().toISOString()
+    };
+
+    reportes.push(nuevoReporte);
+    res.status(201).json(nuevoReporte);
+};
+
+// Funciones auxiliares para generar reportes
+const calcularEjerciciosMasUsados = (entrenamientos) => {
+    const frecuencia = {};
+    
+    entrenamientos.forEach(entrenamiento => {
+        entrenamiento.ejerciciosRealizados.forEach(ejercicio => {
+            if (!frecuencia[ejercicio.ejercicioId]) {
+                frecuencia[ejercicio.ejercicioId] = 0;
+            }
+            frecuencia[ejercicio.ejercicioId]++;
+        });
+    });
+
+    return Object.entries(frecuencia)
+        .map(([ejercicioId, frecuencia]) => ({
+            ejercicioId,
+            nombre: obtenerNombreEjercicio(ejercicioId),
+            frecuencia
+        }))
+        .sort((a, b) => b.frecuencia - a.frecuencia);
+};
+
+const calcularProgreso = (entrenamientos) => {
+    let pesoMaximo = 0;
+    let repeticionesTotales = 0;
+    let tiempoEstimado = 0;
+
+    entrenamientos.forEach(entrenamiento => {
+        entrenamiento.ejerciciosRealizados.forEach(ejercicio => {
+            // Calcular peso máximo
+            ejercicio.pesoUsado.forEach(peso => {
+                if (peso > pesoMaximo) {
+                    pesoMaximo = peso;
+                }
+            });
+
+            // Calcular repeticiones totales
+            ejercicio.repeticionesCompletadas.forEach(repeticiones => {
+                repeticionesTotales += repeticiones;
+            });
+
+            // Estimación de tiempo (5 min por serie)
+            tiempoEstimado += ejercicio.seriesCompletadas * 5;
+        });
+    });
+
+    const consistencyScore = Math.min(100, (entrenamientos.length / 15) * 100); // Basado en 15 sesiones esperadas
+
+    return {
+        pesoMaximoLevantado: pesoMaximo,
+        repeticionesTotales,
+        tiempoTotalMinutos: tiempoEstimado,
+        sesionesCompletadas: entrenamientos.length,
+        consistencyScore: Math.round(consistencyScore)
+    };
+};
+
+const generarRecomendaciones = (progreso, ejerciciosFrecuencia) => {
+    const recomendaciones = [];
+
+    // Recomendación basada en consistencia
+    if (progreso.consistencyScore < 70) {
+        recomendaciones.push("Intenta mantener una mayor consistencia en tus entrenamientos");
+    } else {
+        recomendaciones.push("¡Excelente consistencia! Sigue así");
+    }
+
+    // Recomendación basada en variedad de ejercicios
+    if (ejerciciosFrecuencia.length < 5) {
+        recomendaciones.push("Considera agregar más variedad a tu rutina de ejercicios");
+    }
+
+    // Recomendación basada en progreso de peso
+    if (progreso.pesoMaximoLevantado > 0 && progreso.pesoMaximoLevantado < 50) {
+        recomendaciones.push("Puedes intentar aumentar gradualmente el peso en tus ejercicios");
+    }
+
+    // Recomendación general
+    recomendaciones.push("Recuerda mantener una hidratación adecuada durante tus entrenamientos");
+
+    return recomendaciones;
+};
+
+const obtenerNombreEjercicio = (ejercicioId) => {
+    const ejercicio = ejercicios.find(e => e.id === ejercicioId);
+    return ejercicio ? ejercicio.nombre : `Ejercicio ${ejercicioId}`;
+};
