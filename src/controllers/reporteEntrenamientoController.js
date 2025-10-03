@@ -222,3 +222,28 @@ const getReportesByUsuario = (req, res) => {
         reportes: reportesUsuario
     });
 };
+
+
+// DELETE /reportes/:id
+const deleteReporte = (req, res) => {
+    const { id } = req.params;
+    const index = reportes.findIndex(r => r.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Reporte no encontrado' });
+    }
+
+    const deletedReporte = reportes.splice(index, 1);
+    res.status(200).json({ 
+        message: 'Reporte eliminado',
+        deleted: deletedReporte[0].id 
+    });
+};
+
+module.exports = {
+    getReportes,
+    getReporteById,
+    generarReporte,
+    getReportesByUsuario,
+    deleteReporte
+};
