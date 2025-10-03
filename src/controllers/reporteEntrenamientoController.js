@@ -209,3 +209,16 @@ const obtenerNombreEjercicio = (ejercicioId) => {
     const ejercicio = ejercicios.find(e => e.id === ejercicioId);
     return ejercicio ? ejercicio.nombre : `Ejercicio ${ejercicioId}`;
 };
+
+// GET /reportes/usuario/:usuarioId - Obtener todos los reportes de un usuario
+const getReportesByUsuario = (req, res) => {
+    const { usuarioId } = req.params;
+    
+    const reportesUsuario = reportes.filter(r => r.usuarioId === usuarioId);
+    
+    res.status(200).json({
+        usuarioId,
+        totalReportes: reportesUsuario.length,
+        reportes: reportesUsuario
+    });
+};
