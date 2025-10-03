@@ -50,3 +50,34 @@ const getPlanById = (req, res) => {
     }
     res.status(200).json(plan);
 };
+
+// POST /plans
+const createPlan = (req, res) => {
+    const { usuarioId, nombre, objetivo, duracionSemanas, secciones } = req.body;
+
+    if (!usuarioId || !nombre || !objetivo || !duracionSemanas) {
+        return res.status(400).json({ 
+            error: 'usuarioId, nombre, objetivo y duracionSemanas son requeridos' 
+        });
+    }
+
+    // Validar objetivos permitidos
+    const objetivosPermitidos = ['hipertrofia', 'resistencia', 'pérdida de peso', 'mantenimiento', 'definición'];
+    if (!objetivosPermitidos.includes(objetivo)) {
+        return res.status(400).json({ 
+            error: 'Objetivo no válido. Use: hipertrofia, resistencia, pérdida de peso, mantenimiento o definición' 
+        });
+    }
+
+    const newPlan = {
+        id: `${Date.now()}`,
+        usuarioId,
+        nombre,
+        objetivo,
+        duracionSemanas: parseInt(duracionSemanas),
+        secciones: secciones || []
+    };
+
+    plans.push(newPlan);
+    res.status(201).json(newPlan);
+};
