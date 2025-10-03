@@ -95,3 +95,41 @@ const createSeccion = (req, res) => {
     secciones.push(newSeccion);
     res.status(201).json(newSeccion);
 };
+
+// PUT /secciones/:id
+const updateSeccion = (req, res) => {
+    const { id } = req.params;
+    const { planId, fechaProgramada, comentarios, ejercicios } = req.body;
+
+    const index = secciones.findIndex(s => s.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Sección de entrenamiento no encontrada' });
+    }
+
+    if (!planId || !fechaProgramada) {
+        return res.status(400).json({ 
+            error: 'planId y fechaProgramada son requeridos' 
+        });
+    }
+
+    // Validar ejercicios si se proporcionan
+    if (ejercicios && Array.isArray(ejercicios)) {
+        for (let ejercicio of ejercicios) {
+            if (!ejercicio.ejercicioId || !ejercicio.series || !ejercicio.repeticiones) {
+                return res.status(400).json({ 
+                    error: 'Cada ejercicio debe tener ejercicioId, series y repeticiones'
+                });
+            }
+        }
+    }
+
+    secciones[index] = {
+        ...secciones[index],
+        planId,
+        fechaProgramada,
+        comentarios: comentarios || secciones[index].comentarios,
+        ejercicios: ejercicios || secciones[index].ejercicios
+    };
+
+    res.status(200).json(secciones[index]);
+};
