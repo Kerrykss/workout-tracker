@@ -65,3 +65,49 @@ const getEntrenamientoById = (req, res) => {
     }
     res.status(200).json(entrenamiento);
 };
+
+// POST /entrenamientos
+const createEntrenamiento = (req, res) => {
+    const { seccionId, fechaRealizada, notas, ejerciciosRealizados } = req.body;
+
+    if (!seccionId || !fechaRealizada) {
+        return res.status(400).json({ 
+            error: 'seccionId y fechaRealizada son requeridos' 
+        });
+    }
+
+    // Validar estructura de ejercicios realizados
+    if (ejerciciosRealizados && Array.isArray(ejerciciosRealizados)) {
+        for (let ejercicio of ejerciciosRealizados) {
+            if (!ejercicio.ejercicioId || !ejercicio.seriesCompletadas) {
+                return res.status(400).json({ 
+                    error: 'Cada ejercicio debe tener ejercicioId y seriesCompletadas'
+                });
+            }
+            
+            // Validar arrays de repeticiones y pesos
+            if (ejercicio.repeticionesCompletadas && !Array.isArray(ejercicio.repeticionesCompletadas)) {
+                return res.status(400).json({ 
+                    error: 'repeticionesCompletadas debe ser un array'
+                });
+            }
+            
+            if (ejercicio.pesoUsado && !Array.isArray(ejercicio.pesoUsado)) {
+                return res.status(400).json({ 
+                    error: 'pesoUsado debe ser un array'
+                });
+            }
+        }
+    }
+
+    const newEntrenamiento = {
+        id: `${Date.now()}`,
+        seccionId,
+        fechaRealizada,
+        notas: notas || "",
+        ejerciciosRealizados: ejerciciosRealizados || []
+    };
+
+    entrenamientos.push(newEntrenamiento);
+    res.status(201).json(newEntrenamiento);
+};
