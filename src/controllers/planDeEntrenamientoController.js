@@ -81,3 +81,39 @@ const createPlan = (req, res) => {
     plans.push(newPlan);
     res.status(201).json(newPlan);
 };
+
+// PUT /plans/:id
+const updatePlan = (req, res) => {
+    const { id } = req.params;
+    const { usuarioId, nombre, objetivo, duracionSemanas, secciones } = req.body;
+
+    const index = plans.findIndex(p => p.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Plan de entrenamiento no encontrado' });
+    }
+
+    if (!usuarioId || !nombre || !objetivo || !duracionSemanas) {
+        return res.status(400).json({ 
+            error: 'usuarioId, nombre, objetivo y duracionSemanas son requeridos' 
+        });
+    }
+
+    // Validar objetivos permitidos
+    const objetivosPermitidos = ['hipertrofia', 'resistencia', 'pérdida de peso', 'mantenimiento', 'definición'];
+    if (!objetivosPermitidos.includes(objetivo)) {
+        return res.status(400).json({ 
+            error: 'Objetivo no válido. Use: hipertrofia, resistencia, pérdida de peso, mantenimiento o definición' 
+        });
+    }
+
+    plans[index] = {
+        ...plans[index],
+        usuarioId,
+        nombre,
+        objetivo,
+        duracionSemanas: parseInt(duracionSemanas),
+        secciones: secciones || plans[index].secciones
+    };
+
+    res.status(200).json(plans[index]);
+};
