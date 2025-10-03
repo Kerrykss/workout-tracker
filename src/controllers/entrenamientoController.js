@@ -192,3 +192,25 @@ const addEjercicioRealizado = (req, res) => {
     entrenamiento.ejerciciosRealizados.push(nuevoEjercicioRealizado);
     res.status(201).json(entrenamiento);
 };
+// GET /entrenamientos/seccion/:seccionId - Obtener entrenamientos por sección
+const getEntrenamientosBySeccion = (req, res) => {
+    const { seccionId } = req.params;
+    
+    const entrenamientosSeccion = entrenamientos.filter(e => e.seccionId === seccionId);
+    
+    res.status(200).json({
+        seccionId,
+        total: entrenamientosSeccion.length,
+        entrenamientos: entrenamientosSeccion
+    });
+};
+
+module.exports = {
+    getEntrenamientos,
+    getEntrenamientoById,
+    createEntrenamiento,
+    updateEntrenamiento,
+    deleteEntrenamiento,
+    addEjercicioRealizado,
+    getEntrenamientosBySeccion
+};
