@@ -133,3 +133,52 @@ const updateSeccion = (req, res) => {
 
     res.status(200).json(secciones[index]);
 };
+
+// DELETE /secciones/:id
+const deleteSeccion = (req, res) => {
+    const { id } = req.params;
+    const index = secciones.findIndex(s => s.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Sección de entrenamiento no encontrada' });
+    }
+
+    const deletedSeccion = secciones.splice(index, 1);
+    res.status(200).json({ deleted: deletedSeccion[0].id });
+};
+
+// POST /secciones/:id/ejercicios - Agregar ejercicio a una sección
+const addEjercicioToSeccion = (req, res) => {
+    const { id } = req.params;
+    const { ejercicioId, series, repeticiones, peso } = req.body;
+
+    const seccion = secciones.find(s => s.id === id);
+    if (!seccion) {
+        return res.status(404).json({ error: 'Sección no encontrada' });
+    }
+
+    if (!ejercicioId || !series || !repeticiones) {
+        return res.status(400).json({ 
+            error: 'ejercicioId, series y repeticiones son requeridos' 
+        });
+    }
+
+    const nuevoEjercicio = {
+        ejercicioId,
+        series: parseInt(series),
+        repeticiones: parseInt(repeticiones),
+        peso: peso ? parseFloat(peso) : 0
+    };
+
+    seccion.ejercicios.push(nuevoEjercicio);
+    res.status(201).json(seccion);
+};
+
+module.exports = {
+    getSecciones,
+    getSeccionById,
+    createSeccion,
+    updateSeccion,
+    deleteSeccion,
+    addEjercicioToSeccion
+};
