@@ -164,3 +164,31 @@ const deleteEntrenamiento = (req, res) => {
     const deletedEntrenamiento = entrenamientos.splice(index, 1);
     res.status(200).json({ deleted: deletedEntrenamiento[0].id });
 }; 
+
+// POST /entrenamientos/:id/ejercicios - Agregar ejercicio realizado
+const addEjercicioRealizado = (req, res) => {
+    const { id } = req.params;
+    const { ejercicioId, seriesCompletadas, repeticionesCompletadas, pesoUsado, notas } = req.body;
+
+    const entrenamiento = entrenamientos.find(e => e.id === id);
+    if (!entrenamiento) {
+        return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+    }
+
+    if (!ejercicioId || !seriesCompletadas) {
+        return res.status(400).json({ 
+            error: 'ejercicioId y seriesCompletadas son requeridos' 
+        });
+    }
+
+    const nuevoEjercicioRealizado = {
+        ejercicioId,
+        seriesCompletadas: parseInt(seriesCompletadas),
+        repeticionesCompletadas: repeticionesCompletadas || [],
+        pesoUsado: pesoUsado || [],
+        notas: notas || ""
+    };
+
+    entrenamiento.ejerciciosRealizados.push(nuevoEjercicioRealizado);
+    res.status(201).json(entrenamiento);
+};
