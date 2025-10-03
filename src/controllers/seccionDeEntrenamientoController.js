@@ -62,3 +62,36 @@ const getSeccionById = (req, res) => {
     }
     res.status(200).json(seccion);
 };
+
+// POST /secciones
+const createSeccion = (req, res) => {
+    const { planId, fechaProgramada, comentarios, ejercicios } = req.body;
+
+    if (!planId || !fechaProgramada) {
+        return res.status(400).json({ 
+            error: 'planId y fechaProgramada son requeridos' 
+        });
+    }
+
+    // Validar estructura de ejercicios si se proporcionan
+    if (ejercicios && Array.isArray(ejercicios)) {
+        for (let ejercicio of ejercicios) {
+            if (!ejercicio.ejercicioId || !ejercicio.series || !ejercicio.repeticiones) {
+                return res.status(400).json({ 
+                    error: 'Cada ejercicio debe tener ejercicioId, series y repeticiones'
+                });
+            }
+        }
+    }
+
+    const newSeccion = {
+        id: `${Date.now()}`,
+        planId,
+        fechaProgramada,
+        comentarios: comentarios || "",
+        ejercicios: ejercicios || []
+    };
+
+    secciones.push(newSeccion);
+    res.status(201).json(newSeccion);
+};
