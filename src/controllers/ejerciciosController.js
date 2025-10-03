@@ -120,3 +120,24 @@ const updateExercise = (req, res) => {
 
     res.status(200).json(exercises[index]);
 };
+
+// DELETE /exercises/:id
+const deleteExercise = (req, res) => {
+    const { id } = req.params;
+    const index = exercises.findIndex(e => e.id === id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Ejercicio no encontrado' });
+    }
+
+    const deletedExercise = exercises.splice(index, 1);
+    res.status(200).json({ deleted: deletedExercise[0].id });
+};
+
+module.exports = {
+    getExercises,
+    getExerciseById,
+    createExercise,
+    updateExercise,
+    deleteExercise
+};
